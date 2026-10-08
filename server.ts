@@ -18,7 +18,14 @@ app.use(express.json());
 let ai: GoogleGenAI | null = null;
 if (process.env.GEMINI_API_KEY) {
   try {
-    ai = new GoogleGenAI();
+    ai = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
+      },
+    });
   } catch (err) {
     console.error('Error initializing GoogleGenAI:', err);
   }
@@ -129,6 +136,27 @@ app.post('/api/simulate-crisis', async (req, res) => {
     console.error('Simulation error:', error);
     return res.status(500).json({ error: 'Simulation failed' });
   }
+});
+
+// API Route: Secure Server-Side Technical Key Verification
+app.post('/api/technical-verify', (req, res) => {
+  const { secretKey } = req.body;
+  const validSecret = process.env.TECHNICAL_ACCESS_SECRET || 'arogya-tech-2026';
+
+  if (!secretKey || typeof secretKey !== 'string') {
+    return res.status(400).json({ verified: false, error: 'Authorization key is required' });
+  }
+
+  if (secretKey.trim() === validSecret) {
+    return res.json({ 
+      verified: true, 
+      role: 'technical_admin', 
+      token: 'arogya-tech-session-' + Date.now(),
+      message: 'Technical Console access authorized' 
+    });
+  }
+
+  return res.status(401).json({ verified: false, error: 'Invalid technical authorization key' });
 });
 
 // Mount Vite or static server

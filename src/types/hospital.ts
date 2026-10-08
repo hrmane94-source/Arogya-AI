@@ -1,5 +1,43 @@
 export type Role = 'ADMIN' | 'BED_MANAGER' | 'DOCTOR' | 'EMERGENCY_CHIEF';
 
+export type AppRole = 'patient' | 'doctor' | 'staff' | 'technical_admin';
+
+export interface UserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  role: AppRole;
+  phone?: string;
+  department?: string;
+  hospitalId?: string;
+  uhid?: string;
+}
+
+export interface AppointmentRecord {
+  id: string;
+  patientId: string;
+  patientName: string;
+  doctorId: string;
+  doctorName: string;
+  department: string;
+  date: string;
+  time: string;
+  tokenNumber: string;
+  status: 'UPCOMING' | 'IN_CONSULTATION' | 'COMPLETED' | 'CANCELLED';
+  reason: string;
+  createdAt?: string;
+}
+
+export interface AuditLogRecord {
+  id: string;
+  action: string;
+  actor: string;
+  role: string;
+  entity: string;
+  details: string;
+  timestamp: string;
+}
+
 export type ShortageSeverity = 'CRITICAL' | 'WARNING' | 'OPPORTUNITY';
 
 export type BedStatus = 'AVAILABLE' | 'OCCUPIED' | 'DISCHARGING' | 'CLEANING' | 'RESERVED';

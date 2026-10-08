@@ -1,0 +1,160 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile document storing role and hospital affiliation",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["patient", "doctor", "staff", "technical_admin"] },
+        "phone": { "type": "string" },
+        "department": { "type": "string" },
+        "hospitalId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Bed": {
+      "title": "Bed",
+      "description": "Individual hospital bed tracking real-time status and lifecycle",
+      "type": "object",
+      "properties": {
+        "bedId": { "type": "string" },
+        "bedNumber": { "type": "string" },
+        "department": { "type": "string" },
+        "ward": { "type": "string" },
+        "status": { "type": "string", "enum": ["AVAILABLE", "RESERVED", "OCCUPIED", "DISCHARGING", "CLEANING"] },
+        "patientName": { "type": "string" },
+        "patientId": { "type": "string" },
+        "assignedDoctor": { "type": "string" },
+        "admittedAt": { "type": "string" },
+        "expectedDischarge": { "type": "string" },
+        "cleaningStartedAt": { "type": "string" },
+        "lastUpdated": { "type": "string" }
+      },
+      "required": ["bedId", "bedNumber", "department", "status"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Outpatient clinic or specialist booking",
+      "type": "object",
+      "properties": {
+        "appointmentId": { "type": "string" },
+        "patientId": { "type": "string" },
+        "patientName": { "type": "string" },
+        "doctorId": { "type": "string" },
+        "doctorName": { "type": "string" },
+        "department": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "tokenNumber": { "type": "string" },
+        "status": { "type": "string", "enum": ["UPCOMING", "IN_CONSULTATION", "COMPLETED", "CANCELLED"] },
+        "reason": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["appointmentId", "patientName", "doctorName", "status", "date"]
+    },
+    "QueuePatient": {
+      "title": "QueuePatient",
+      "description": "Live clinic and emergency triage queue entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "tokenNumber": { "type": "string" },
+        "patientName": { "type": "string" },
+        "age": { "type": "number" },
+        "gender": { "type": "string" },
+        "reason": { "type": "string" },
+        "department": { "type": "string" },
+        "status": { "type": "string", "enum": ["WAITING", "IN_CONSULTATION", "COMPLETED", "ADMITTED"] },
+        "queuePosition": { "type": "number" },
+        "estimatedWaitMins": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "tokenNumber", "patientName", "status"]
+    },
+    "Alert": {
+      "title": "Alert",
+      "description": "Hospital operational and capacity surge early warning",
+      "type": "object",
+      "properties": {
+        "alertId": { "type": "string" },
+        "severity": { "type": "string", "enum": ["CRITICAL", "WARNING", "INFO"] },
+        "department": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "leadTimeHours": { "type": "number" },
+        "actionRequired": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "ACKNOWLEDGED", "RESOLVED"] },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["alertId", "severity", "title", "status"]
+    },
+    "BillingRecord": {
+      "title": "BillingRecord",
+      "description": "Patient hospital invoice and government health card concession record",
+      "type": "object",
+      "properties": {
+        "invoiceId": { "type": "string" },
+        "patientName": { "type": "string" },
+        "tokenNumber": { "type": "string" },
+        "department": { "type": "string" },
+        "bedNumber": { "type": "string" },
+        "grossAmount": { "type": "number" },
+        "schemeName": { "type": "string" },
+        "concessionDiscount": { "type": "number" },
+        "netPayable": { "type": "number" },
+        "status": { "type": "string", "enum": ["PAID_CASHLESS", "PARTIALLY_SUBSIDIZED", "SETTLED", "PENDING"] },
+        "issuedDate": { "type": "string" }
+      },
+      "required": ["invoiceId", "patientName", "netPayable", "status"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Security and operational event audit trail",
+      "type": "object",
+      "properties": {
+        "logId": { "type": "string" },
+        "action": { "type": "string" },
+        "actor": { "type": "string" },
+        "role": { "type": "string" },
+        "entity": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["logId", "action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profile store indexed by Firebase Auth UID"
+    },
+    "/beds/{bedId}": {
+      "schema": { "$ref": "#/entities/Bed" },
+      "description": "Real-time hospital bed status records"
+    },
+    "/appointments/{appointmentId}": {
+      "schema": { "$ref": "#/entities/Appointment" },
+      "description": "Patient appointments booked with doctors"
+    },
+    "/queue/{queueId}": {
+      "schema": { "$ref": "#/entities/QueuePatient" },
+      "description": "Live department triage and outpatient queues"
+    },
+    "/alerts/{alertId}": {
+      "schema": { "$ref": "#/entities/Alert" },
+      "description": "Proactive bed shortage and capacity alerts"
+    },
+    "/billing/{invoiceId}": {
+      "schema": { "$ref": "#/entities/BillingRecord" },
+      "description": "Inpatient and outpatient billing invoices"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Immutable operational and security audit events"
+    }
+  }
+}

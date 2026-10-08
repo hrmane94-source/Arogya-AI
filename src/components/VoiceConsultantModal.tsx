@@ -125,7 +125,14 @@ export const VoiceConsultantModal: React.FC<VoiceConsultantModalProps> = ({
     }
 
     if (!isSpeechRecognitionSupported()) {
-      alert('Speech recognition is not supported on this browser. You can type queries or click prompt shortcuts.');
+      setMessages((prev) => [
+        ...prev,
+        {
+          sender: 'ai',
+          text: 'Speech recognition is not supported in this browser environment. You can type inquiries or use the quick prompt buttons below.',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
       return;
     }
 

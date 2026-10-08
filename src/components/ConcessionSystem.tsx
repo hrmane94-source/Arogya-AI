@@ -26,6 +26,7 @@ export const ConcessionSystem: React.FC<ConcessionSystemProps> = ({ initialPatie
   const [cardNumber, setCardNumber] = useState<string>(initialPatient?.govCardNumber || 'AB-PMJAY-9042-8821');
   const [wardType, setWardType] = useState<string>(initialPatient?.assignedWardTarget || 'Intensive Care Unit (ICU)');
   const [stayDays, setStayDays] = useState<number>(3);
+  const [notificationToast, setNotificationToast] = useState<string | null>(null);
   
   const [concessionSlip, setConcessionSlip] = useState<TokenConcessionSlip | null>({
     tokenNumber: 'A034',
@@ -82,8 +83,58 @@ export const ConcessionSystem: React.FC<ConcessionSystemProps> = ({ initialPatie
     setConcessionSlip(slip);
   };
 
+  const handlePrintSlip = () => {
+    if (!concessionSlip) return;
+    setNotificationToast(`Concession Certificate for Token ${concessionSlip.tokenNumber} sent to printer.`);
+    setTimeout(() => setNotificationToast(null), 4000);
+    window.print();
+  };
+
+  const handleExportSlip = () => {
+    if (!concessionSlip) return;
+    const certText = `================================================================================
+GOVERNMENT CONCESSION CERTIFICATE & BED SUBSIDY CLEARANCE
+METROPOLIS GOVERNMENT MEDICAL COLLEGE & LEVEL-1 TRAUMA HOSPITAL
+================================================================================
+Token Number    : ${concessionSlip.tokenNumber}
+Patient Name    : ${concessionSlip.patientName} (${concessionSlip.age} Years)
+Entitled Scheme : ${concessionSlip.schemeName}
+Card / ABHA ID  : ${concessionSlip.cardNumber}
+Priority        : ${concessionSlip.triagePriority}
+Target Ward     : ${concessionSlip.targetWard}
+Assigned Bed    : ${concessionSlip.assignedBed}
+Standard Fee    : Rs. ${concessionSlip.standardDailyBedFee.toLocaleString()} / day
+Discount Subsidy: ${concessionSlip.concessionDiscountPct}%
+Net Daily Fee   : Rs. ${concessionSlip.netPayableDaily.toLocaleString()}
+Issued At       : ${concessionSlip.issuedAt}
+Valid Until     : ${concessionSlip.validUntil}
+Auth Code       : ${concessionSlip.authCode}
+================================================================================
+STATUS: ${concessionSlip.concessionDiscountPct === 100 ? '100% CASHLESS BENEFIT AUTHORIZED' : 'SUBSIDY APPLIED'}
+Authenticated under NHA & PM-JAY Ayushman Bharat digital gateway.
+================================================================================`;
+    const blob = new Blob([certText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Concession_Slip_${concessionSlip.tokenNumber}_${concessionSlip.patientName.replace(/\s+/g, '_')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setNotificationToast(`Digital Certificate downloaded for ${concessionSlip.patientName}.`);
+    setTimeout(() => setNotificationToast(null), 4000);
+  };
+
   return (
     <div className="space-y-6">
+      {/* Toast Notification */}
+      {notificationToast && (
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 border-2 border-emerald-400 text-emerald-300 px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3 animate-fade-in font-mono text-xs">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <span>{notificationToast}</span>
+        </div>
+      )}
       {/* Header with Hospital Logos */}
       <div className="bg-white border-2 border-emerald-200 rounded-3xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-3.5">
@@ -342,18 +393,20 @@ export const ConcessionSystem: React.FC<ConcessionSystemProps> = ({ initialPatie
 
               <div className="flex gap-2 pt-1">
                 <button
-                  onClick={() => alert(`Concession Certificate for Token ${concessionSlip.tokenNumber} sent to hospital billing printer.`)}
+                  type="button"
+                  onClick={handlePrintSlip}
                   className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-bold flex items-center justify-center gap-1.5 transition-colors"
                 >
                   <Printer className="w-3.5 h-3.5 text-slate-500" />
                   <span>Print Slip</span>
                 </button>
                 <button
-                  onClick={() => alert(`Digital Certificate PDF downloaded for ${concessionSlip.patientName}.`)}
+                  type="button"
+                  onClick={handleExportSlip}
                   className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                 >
                   <Download className="w-3.5 h-3.5 text-white" />
-                  <span>Export PDF</span>
+                  <span>Export PDF / Slip</span>
                 </button>
               </div>
             </div>
