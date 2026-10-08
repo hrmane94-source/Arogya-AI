@@ -1,0 +1,6 @@
+{
+  "name": "BedPulse AI - Hospital Bed Command Center",
+  "description": "Predictive hospital bed demand command center, shortage early-warning system, digital twin simulator, live triage queue, and health card concession engine.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
